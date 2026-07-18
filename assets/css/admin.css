@@ -1,0 +1,242 @@
+.netdraw-admin-wrapper {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    margin-top: 15px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.netdraw-admin-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f1;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.netdraw-admin-header label {
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.netdraw-admin-header select {
+    padding: 6px 30px 6px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #8c8f94;
+    color: #2c3338;
+}
+
+.netdraw-admin-header select:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.netdraw-admin-header .description {
+    margin: 0;
+    font-style: italic;
+    color: #646970;
+}
+
+/* Horizontal Column Layout */
+.netdraw-admin-grid-container {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    overflow-x: auto;
+    padding: 10px 5px 25px 5px;
+    min-height: 500px;
+    align-items: stretch;
+}
+
+.netdraw-admin-round-col {
+    flex: 1;
+    min-width: 270px;
+    max-width: 320px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.netdraw-admin-round-header {
+    background: #ededed;
+    padding: 12px;
+    border-bottom: 1px solid #dcdcde;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    text-align: center;
+}
+
+.netdraw-admin-round-header h3 {
+    margin: 0 0 3px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.netdraw-round-info {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #646970;
+    letter-spacing: 0.5px;
+}
+
+.netdraw-admin-matches-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 20px 12px;
+    gap: 25px; /* Minimum gap between elements */
+}
+
+/* Match Box Styling */
+.netdraw-admin-match-box {
+    background: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.netdraw-admin-match-box:hover {
+    border-color: #8c8f94;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.netdraw-admin-match-box.has-winner {
+    border-color: #46b450;
+    box-shadow: 0 0 0 1px #46b450;
+}
+
+.netdraw-admin-match-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #8c8f94;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Player Rows */
+.netdraw-admin-player-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.netdraw-admin-player-row input[type="text"] {
+    flex: 1;
+    font-size: 13px;
+    padding: 6px 10px;
+    margin: 0;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid #8c8f94;
+    color: #2c3338;
+}
+
+.netdraw-admin-player-row input[type="text"]:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.netdraw-readonly-input {
+    background-color: #f0f0f1 !important;
+    border-color: #dcdcde !important;
+    color: #646970 !important;
+    font-style: italic;
+    cursor: not-allowed;
+}
+
+/* Set Winner Button */
+.netdraw-win-btn {
+    background: #f6f7f7;
+    border: 1px solid #8c8f94;
+    color: #646970;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.15s ease-in-out;
+}
+
+.netdraw-win-btn:hover {
+    background: #f0f0f1;
+    color: #1d2327;
+    border-color: #50575e;
+}
+
+.netdraw-win-btn.active {
+    background: #46b450;
+    border-color: #3fa349;
+    color: #ffffff;
+}
+
+.netdraw-admin-player-row.is-winner input[type="text"] {
+    background-color: #f0f9f1;
+    border-color: #46b450;
+    color: #1e4620;
+    font-weight: 600;
+}
+
+/* Score Input Row */
+.netdraw-admin-score-row {
+    margin-top: 10px;
+    border-top: 1px solid #f0f0f1;
+    padding-top: 10px;
+}
+
+.netdraw-score-input {
+    width: 100%;
+    font-size: 12px;
+    padding: 5px 8px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid #dcdcde;
+    color: #2c3338;
+    background-color: #fafafa;
+}
+
+.netdraw-score-input:focus {
+    border-color: #2271b1;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.netdraw-admin-datetime-row {
+    margin-top: 6px;
+}
+
+.netdraw-datetime-input {
+    width: 100%;
+    font-size: 11px;
+    padding: 5px 8px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid #dcdcde;
+    color: #2c3338;
+    background-color: #fafafa;
+}
+
+.netdraw-datetime-input:focus {
+    border-color: #2271b1;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 1px #2271b1;
+}
