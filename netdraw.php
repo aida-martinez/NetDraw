@@ -133,7 +133,7 @@ function netdraw_editor_meta_box_callback( $post ) {
 			<div class="netdraw-shortcode-display" style="display: flex; align-items: center; gap: 8px;">
 				<label><strong><?php esc_html_e( 'Shortcode:', 'netdraw' ); ?></strong></label>
 				<input type="text" readonly value="<?php echo esc_attr( '[netdraw id="' . $post->ID . '"]' ); ?>" style="width: 150px; font-family: monospace; text-align: center; background: #f0f0f1; border: 1px solid #8c8f94; border-radius: 4px; padding: 4px;" onclick="this.select();">
-				<button type="button" class="button button-secondary" onclick="navigator.clipboard.writeText('[netdraw id=\'<?php echo $post->ID; ?>\']'); alert('Shortcode copied to clipboard!');"><?php esc_html_e( 'Copy', 'netdraw' ); ?></button>
+				<button type="button" class="button button-secondary" onclick="navigator.clipboard.writeText('[netdraw id=\'<?php echo absint( $post->ID ); ?>\']'); alert('Shortcode copied to clipboard!');"><?php esc_html_e( 'Copy', 'netdraw' ); ?></button>
 				<button type="button" class="button button-primary" id="netdraw_print_pdf" style="margin-left: 5px;"><?php esc_html_e( 'Print / PDF', 'netdraw' ); ?></button>
 			</div>
 		</div>
@@ -159,7 +159,7 @@ function netdraw_save_post_handler( $post_id ) {
 	}
 
 	// Verify nonce.
-	if ( ! wp_verify_nonce( $_POST['netdraw_nonce'], 'netdraw_save_bracket' ) ) {
+	if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['netdraw_nonce'] ) ), 'netdraw_save_bracket' ) ) {
 		return;
 	}
 
@@ -179,7 +179,7 @@ function netdraw_save_post_handler( $post_id ) {
 
 	// Verify and sanitize input
 	if ( isset( $_POST['netdraw_bracket_data'] ) ) {
-		$raw_data = wp_unslash( $_POST['netdraw_bracket_data'] );
+		$raw_data = sanitize_textarea_field( wp_unslash( $_POST['netdraw_bracket_data'] ) );
 		$data_decoded = json_decode( $raw_data, true );
 
 		if ( is_array( $data_decoded ) ) {

@@ -1,0 +1,45 @@
+# =============================================================================
+# NetDraw – WordPress Plugin .gitignore
+# =============================================================================
+
+# ── Build Artefacts ──────────────────────────────────────────────────────────
+*.zip
+*.tar.gz
+
+# ── OS Files ─────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── IDEs & Editors ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Node (tooling only – not a JS project) ───────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ── PHP / Composer ───────────────────────────────────────────────────────────
+vendor/
+composer.lock
+
+# ── WordPress local dev leftovers ────────────────────────────────────────────
+wp-config.php
+wp-content/uploads/
+.htaccess
+
+# ── Logs & temp ──────────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.cache
