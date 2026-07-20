@@ -5,12 +5,44 @@
  * Version: 1.0.0
  * Author: Aida Martinez
  * Text Domain: netdraw
- * License: GPL2
+ * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Requires at least: 6.0
+ * Requires PHP: 7.4
  */
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+define( 'NETDRAW_VERSION', '1.0.0' );
+define( 'NETDRAW_FILE', __FILE__ );
+define( 'NETDRAW_DIR', plugin_dir_path( __FILE__ ) );
+define( 'NETDRAW_URL', plugin_dir_url( __FILE__ ) );
+
+// ---------------------------------------------------------------------------
+// Lifecycle hooks – must be registered at top-level, not inside other hooks.
+// ---------------------------------------------------------------------------
+register_activation_hook( NETDRAW_FILE, 'netdraw_activate' );
+register_deactivation_hook( NETDRAW_FILE, 'netdraw_deactivate' );
+
+/**
+ * Plugin activation: register CPT then flush rewrite rules.
+ */
+function netdraw_activate() {
+	netdraw_register_cpt();
+	flush_rewrite_rules();
+}
+
+/**
+ * Plugin deactivation: flush rewrite rules so CPT routes are removed.
+ */
+function netdraw_deactivate() {
+	flush_rewrite_rules();
 }
 
 /**
@@ -58,27 +90,38 @@ add_action( 'init', 'netdraw_register_cpt' );
  * Enqueue scripts and styles for the admin editor.
  */
 function netdraw_enqueue_admin_assets( $hook ) {
+	// Only load on the post editor screens for this CPT.
+	if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+		return;
+	}
+
 	global $post;
 	if ( ! $post || 'netdraw' !== $post->post_type ) {
 		return;
 	}
 
-	wp_enqueue_style( 'netdraw-admin-style', plugin_dir_url( __FILE__ ) . 'assets/css/admin.css', array(), '1.0.0' );
-	wp_enqueue_script( 'netdraw-admin-script', plugin_dir_url( __FILE__ ) . 'assets/js/admin.js', array(), '1.0.0', true );
+	wp_enqueue_style( 'netdraw-admin-style', NETDRAW_URL . 'assets/css/admin.css', array(), NETDRAW_VERSION );
+	wp_enqueue_script( 'netdraw-admin-script', NETDRAW_URL . 'assets/js/admin.js', array(), NETDRAW_VERSION, true );
 
-	// Fetch existing bracket data to pass to JS
+	// Fetch existing bracket data to pass to JS.
 	$bracket_data = get_post_meta( $post->ID, '_netdraw_bracket_data', true );
 	if ( empty( $bracket_data ) ) {
-		$bracket_data = json_encode( array(
-			'size'    => 8,
-			'matches' => new stdClass()
-		) );
+		$bracket_data = wp_json_encode(
+			array(
+				'size'    => 8,
+				'matches' => new stdClass(),
+			)
+		);
 	}
 
-	wp_localize_script( 'netdraw-admin-script', 'netdrawAdminData', array(
-		'bracketData'    => json_decode( $bracket_data ),
-		'frontendCssUrl' => plugin_dir_url( __FILE__ ) . 'assets/css/frontend.css',
-	) );
+	wp_localize_script(
+		'netdraw-admin-script',
+		'netdrawAdminData',
+		array(
+			'bracketData'    => json_decode( $bracket_data ),
+			'frontendCssUrl' => NETDRAW_URL . 'assets/css/frontend.css',
+		)
+	);
 }
 add_action( 'admin_enqueue_scripts', 'netdraw_enqueue_admin_assets' );
 
@@ -86,8 +129,8 @@ add_action( 'admin_enqueue_scripts', 'netdraw_enqueue_admin_assets' );
  * Enqueue scripts and styles for the frontend.
  */
 function netdraw_enqueue_frontend_assets() {
-	wp_register_style( 'netdraw-frontend-style', plugin_dir_url( __FILE__ ) . 'assets/css/frontend.css', array(), '1.0.0' );
-	wp_register_script( 'netdraw-frontend-script', plugin_dir_url( __FILE__ ) . 'assets/js/frontend.js', array(), '1.0.0', true );
+	wp_register_style( 'netdraw-frontend-style', NETDRAW_URL . 'assets/css/frontend.css', array(), NETDRAW_VERSION );
+	wp_register_script( 'netdraw-frontend-script', NETDRAW_URL . 'assets/js/frontend.js', array(), NETDRAW_VERSION, true );
 }
 add_action( 'wp_enqueue_scripts', 'netdraw_enqueue_frontend_assets' );
 
@@ -177,19 +220,21 @@ function netdraw_save_post_handler( $post_id ) {
 		return;
 	}
 
-	// Verify and sanitize input
+	// Sanitize input: decode JSON first, then sanitize individual fields.
+	// Do NOT run sanitize_textarea_field on raw JSON – it strips backslashes
+	// that are required for valid JSON encoding.
 	if ( isset( $_POST['netdraw_bracket_data'] ) ) {
-		$raw_data = sanitize_textarea_field( wp_unslash( $_POST['netdraw_bracket_data'] ) );
-		$data_decoded = json_decode( $raw_data, true );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized field-by-field after decoding below.
+		$raw_json     = wp_unslash( $_POST['netdraw_bracket_data'] );
+		$data_decoded = json_decode( $raw_json, true );
 
 		if ( is_array( $data_decoded ) ) {
 			$sanitized_matches = array();
-			$size = isset( $data_decoded['size'] ) ? intval( $data_decoded['size'] ) : 8;
+			$size              = isset( $data_decoded['size'] ) ? intval( $data_decoded['size'] ) : 8;
 
 			if ( isset( $data_decoded['matches'] ) && is_array( $data_decoded['matches'] ) ) {
 				foreach ( $data_decoded['matches'] as $match_id => $match ) {
-					// Basic sanitization of keys
-					$safe_match_id = sanitize_key( $match_id );
+					$safe_match_id                         = sanitize_key( $match_id );
 					$sanitized_matches[ $safe_match_id ] = array(
 						'p1'       => isset( $match['p1'] ) ? sanitize_text_field( $match['p1'] ) : '',
 						'p2'       => isset( $match['p2'] ) ? sanitize_text_field( $match['p2'] ) : '',
@@ -205,7 +250,8 @@ function netdraw_save_post_handler( $post_id ) {
 				'matches' => $sanitized_matches,
 			);
 
-			update_post_meta( $post_id, '_netdraw_bracket_data', wp_slash( json_encode( $sanitized_payload ) ) );
+			// update_post_meta handles slashing internally; do not wrap with wp_slash().
+			update_post_meta( $post_id, '_netdraw_bracket_data', wp_json_encode( $sanitized_payload ) );
 		}
 	}
 }
