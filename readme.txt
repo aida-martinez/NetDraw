@@ -1,5 +1,5 @@
 === NetDraw ===
-Contributors: aidamartinez
+Contributors: aida-martinez
 Tags: tennis, tournament, bracket, knockout, sports
 Requires at least: 6.0
 Tested up to: 7.0
