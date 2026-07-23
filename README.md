@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/img/netdraw-logo.png" alt="NetDraw Logo" width="150">
+</p>
+
 # NetDraw
 
 > A lightweight WordPress plugin for managing and displaying knockout tennis tournament brackets with a visual, interactive frontend.
@@ -7,6 +11,15 @@ NetDraw is a spreadsheet-style plugin designed specifically for knockout tennis 
 It eliminates the need for clunky third-party bracket websites or messy image uploads, keeping the entire tennis tournament experience native to your club or league's WordPress site.
 
 ---
+
+## Screenshots
+
+| Admin Bracket Editor (Backend) | Visual Bracket & Path Highlighting (Frontend) |
+| :---: | :---: |
+| ![Admin Editor](assets/screenshots/screenshot-1.png) | ![Frontend Bracket](assets/screenshots/screenshot-2.png) |
+
+---
+
 
 ## Features
 
