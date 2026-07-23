@@ -144,6 +144,10 @@ To map match results forward, NetDraw uses simple binary propagation:
 
 ## Changelog
 
+### 1.0.1
+- Added translation support for Spanish, French, Italian, and Galician.
+- Localized admin editor and frontend scripts.
+
 ### 1.0.0
 - Initial release.
 - Custom Post Type for tournaments.

@@ -4,7 +4,7 @@ Tags: tennis, tournament, bracket, knockout, sports
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -115,6 +115,10 @@ To map match results forward, NetDraw uses simple binary propagation:
 
 == Changelog ==
 
+= 1.0.1 =
+* Added Spanish, French, Italian, and Galician translations.
+* Localized admin and frontend JavaScript assets.
+
 = 1.0.0 =
 * Initial release.
 * Custom Post Type for tournaments.
@@ -123,6 +127,9 @@ To map match results forward, NetDraw uses simple binary propagation:
 * Responsive CSS tree layout with no external dependencies.
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Added translation support for Spanish, French, Italian, and Galician.
 
 = 1.0.0 =
 Initial release.

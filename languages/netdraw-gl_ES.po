@@ -1,0 +1,159 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: NetDraw 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-23 18:45+0200\n"
+"PO-Revision-Date: 2026-07-23 18:45+0200\n"
+"Last-Translator: Aida Martinez\n"
+"Language-Team: Galician\n"
+"Language: gl_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "post type general name"
+msgid "Tournaments"
+msgstr "Torneos"
+
+msgctxt "post type singular name"
+msgid "Tournament"
+msgstr "Torneo"
+
+msgctxt "admin menu"
+msgid "NetDraw"
+msgstr "NetDraw"
+
+msgctxt "add new on admin bar"
+msgid "Tournament"
+msgstr "Torneo"
+
+msgctxt "tournament"
+msgid "Add New Tournament"
+msgstr "Engadir novo torneo"
+
+msgid "Add New Tournament"
+msgstr "Engadir novo torneo"
+
+msgid "New Tournament"
+msgstr "Novo torneo"
+
+msgid "Edit Tournament"
+msgstr "Editar torneo"
+
+msgid "View Tournament"
+msgstr "Ver torneo"
+
+msgid "All Tournaments"
+msgstr "Todos os torneos"
+
+msgid "Search Tournaments"
+msgstr "Buscar torneos"
+
+msgid "Parent Tournaments:"
+msgstr "Torneos pai:"
+
+msgid "No tournaments found."
+msgstr "Non se atoparon torneos."
+
+msgid "No tournaments found in Trash."
+msgstr "Non se atoparon torneos no lixo."
+
+msgid "Tournament Bracket Editor"
+msgstr "Editor do cadro do torneo"
+
+msgid "Tournament Size:"
+msgstr "Tamaño do torneo:"
+
+msgid "Changing the size will reset matches if they exceed the new size bounds."
+msgstr "Cambiar o tamaño restablecerá os enfrontamentos se superan os novos límites de tamaño."
+
+msgid "Shortcode:"
+msgstr "Shortcode:"
+
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Print / PDF"
+msgstr "Imprimir / PDF"
+
+msgid "Tournament bracket not found."
+msgstr "Cadro do torneo non atopado."
+
+msgid "No data available for this tournament."
+msgstr "Non hai datos dispoñibles para este torneo."
+
+msgid "Loading Tournament Draw..."
+msgstr "Cargando o cadro do torneo..."
+
+msgid "8 Players"
+msgstr "8 Xogadores"
+
+msgid "16 Players"
+msgstr "16 Xogadores"
+
+msgid "32 Players"
+msgstr "32 Xogadores"
+
+msgid "64 Players"
+msgstr "64 Xogadores"
+
+msgid "Shortcode copied to clipboard!"
+msgstr "¡Shortcode copiado no portapapeis!"
+
+msgid "Finals"
+msgstr "Finais"
+
+msgid "Semifinals"
+msgstr "Semifinais"
+
+msgid "Quarterfinals"
+msgstr "Cuartos de final"
+
+msgid "Round %d"
+msgstr "Ronda %d"
+
+msgid "Match %d"
+msgstr "Partido %d"
+
+msgid "Player %d"
+msgstr "Xogador %d"
+
+msgid "TBD"
+msgstr "Pendente de determinar"
+
+msgid "Cannot set winner for an empty player slot."
+msgstr "Non se pode definir o gañador para unha posición de xogador baleira."
+
+msgid "Changing the tournament size will reset progression matches that fall out of the new boundaries. Do you want to proceed?"
+msgstr "Cambiar o tamaño del torneo restablecerá os partidos de progresión que queden fóra dos novos límites. ¿Quere continuar?"
+
+msgid "Tournament Bracket"
+msgstr "Cadro do torneo"
+
+msgid "Please allow popups to print the bracket."
+msgstr "Por favor, permita as ventás emerxentes para imprimir o cadro."
+
+msgid "%d Player Knockout Draw"
+msgstr "Cadro de eliminación de %d xogadores"
+
+msgid "Mark Player %d as Winner"
+msgstr "Marcar xogador %d como gañador"
+
+msgid "Score (e.g. 6-4 6-2)"
+msgstr "Resultado (ex. 6-4 6-2)"
+
+msgid "Date & Time (e.g. Sat 10:00 AM)"
+msgstr "Data e hora (ex. Sáb 10:00 AM)"
+
+msgid "No bracket data available."
+msgstr "Non hai datos do cadro dispoñibles."
+
+msgid "Match Score"
+msgstr "Resultado do partido"
+
+msgid "Match Date & Time"
+msgstr "Data e hora do partido"
+
+msgid "Error parsing bracket data."
+msgstr "Erro ao analizar os datos do cadro."

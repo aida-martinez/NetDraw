@@ -1,0 +1,159 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: NetDraw 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-23 18:41+0200\n"
+"PO-Revision-Date: 2026-07-23 18:41+0200\n"
+"Last-Translator: Aida Martinez\n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgctxt "post type general name"
+msgid "Tournaments"
+msgstr "Tournois"
+
+msgctxt "post type singular name"
+msgid "Tournament"
+msgstr "Tournoi"
+
+msgctxt "admin menu"
+msgid "NetDraw"
+msgstr "NetDraw"
+
+msgctxt "add new on admin bar"
+msgid "Tournament"
+msgstr "Tournoi"
+
+msgctxt "tournament"
+msgid "Add New Tournament"
+msgstr "Ajouter un tournoi"
+
+msgid "Add New Tournament"
+msgstr "Ajouter un tournoi"
+
+msgid "New Tournament"
+msgstr "Nouveau tournoi"
+
+msgid "Edit Tournament"
+msgstr "Modifier le tournoi"
+
+msgid "View Tournament"
+msgstr "Voir le tournoi"
+
+msgid "All Tournaments"
+msgstr "Tous les tournois"
+
+msgid "Search Tournaments"
+msgstr "Rechercher des tournois"
+
+msgid "Parent Tournaments:"
+msgstr "Tournois parents :"
+
+msgid "No tournaments found."
+msgstr "Aucun tournoi trouvé."
+
+msgid "No tournaments found in Trash."
+msgstr "Aucun tournoi trouvé dans la corbeille."
+
+msgid "Tournament Bracket Editor"
+msgstr "Éditeur de tableau de tournoi"
+
+msgid "Tournament Size:"
+msgstr "Taille du tournoi :"
+
+msgid "Changing the size will reset matches if they exceed the new size bounds."
+msgstr "Modifier la taille réinitialisera les matchs s'ils dépassent les limites de la nouvelle taille."
+
+msgid "Shortcode:"
+msgstr "Shortcode :"
+
+msgid "Copy"
+msgstr "Copier"
+
+msgid "Print / PDF"
+msgstr "Imprimer / PDF"
+
+msgid "Tournament bracket not found."
+msgstr "Tableau de tournoi introuvable."
+
+msgid "No data available for this tournament."
+msgstr "Aucune donnée disponible pour ce tournoi."
+
+msgid "Loading Tournament Draw..."
+msgstr "Chargement du tableau de tournoi..."
+
+msgid "8 Players"
+msgstr "8 Joueurs"
+
+msgid "16 Players"
+msgstr "16 Joueurs"
+
+msgid "32 Players"
+msgstr "32 Joueurs"
+
+msgid "64 Players"
+msgstr "64 Joueurs"
+
+msgid "Shortcode copied to clipboard!"
+msgstr "Shortcode copié dans le presse-papiers !"
+
+msgid "Finals"
+msgstr "Finale"
+
+msgid "Semifinals"
+msgstr "Demi-finales"
+
+msgid "Quarterfinals"
+msgstr "Quarts de finale"
+
+msgid "Round %d"
+msgstr "Tour %d"
+
+msgid "Match %d"
+msgstr "Match %d"
+
+msgid "Player %d"
+msgstr "Joueur %d"
+
+msgid "TBD"
+msgstr "À déterminer"
+
+msgid "Cannot set winner for an empty player slot."
+msgstr "Impossible de désigner un vainqueur pour un emplacement de joueur vide."
+
+msgid "Changing the tournament size will reset progression matches that fall out of the new boundaries. Do you want to proceed?"
+msgstr "Modifier la taille du tournoi réinitialisera les matchs de progression qui sortent des nouvelles limites. Voulez-vous continuer ?"
+
+msgid "Tournament Bracket"
+msgstr "Tableau de tournoi"
+
+msgid "Please allow popups to print the bracket."
+msgstr "Veuillez autoriser les fenêtres surgissantes pour imprimer le tableau."
+
+msgid "%d Player Knockout Draw"
+msgstr "Tableau d'élimination à %d joueurs"
+
+msgid "Mark Player %d as Winner"
+msgstr "Marquer le joueur %d comme vainqueur"
+
+msgid "Score (e.g. 6-4 6-2)"
+msgstr "Score (ex. 6-4 6-2)"
+
+msgid "Date & Time (e.g. Sat 10:00 AM)"
+msgstr "Date et heure (ex. Sam 10:00)"
+
+msgid "No bracket data available."
+msgstr "Aucune donnée de tableau disponible."
+
+msgid "Match Score"
+msgstr "Score du match"
+
+msgid "Match Date & Time"
+msgstr "Date et heure du match"
+
+msgid "Error parsing bracket data."
+msgstr "Erreur lors de l'analyse des données du tableau."

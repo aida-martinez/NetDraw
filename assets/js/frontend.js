@@ -1,6 +1,14 @@
 (function() {
     'use strict';
 
+    // Helper function for translations
+    function __(key, defaultVal) {
+        if (window.netdrawFrontData && window.netdrawFrontData.strings && window.netdrawFrontData.strings[key]) {
+            return window.netdrawFrontData.strings[key];
+        }
+        return defaultVal;
+    }
+
     // Global renderer function called with a container element and bracketData
     window.netdrawRenderInstance = function(container, bracketData) {
         if (!container) return;
@@ -9,7 +17,7 @@
         container.innerHTML = '';
 
         if (!bracketData || !bracketData.matches || Object.keys(bracketData.matches).length === 0) {
-            container.innerHTML = '<div class="netdraw-error">No bracket data available.</div>';
+            container.innerHTML = '<div class="netdraw-error">' + escapeHtml(__('no_data', 'No bracket data available.')) + '</div>';
             return;
         }
 
@@ -21,7 +29,7 @@
         header.className = 'netdraw-frontend-header';
         header.innerHTML = `
             <div class="netdraw-bracket-meta">
-                <span class="netdraw-badge">${size} Player Knockout Draw</span>
+                <span class="netdraw-badge">${escapeHtml(__('knockout_draw', '%d Player Knockout Draw').replace('%d', size))}</span>
             </div>
         `;
         container.appendChild(header);
@@ -71,25 +79,25 @@
         // Player 1 DOM
         const p1Html = `
             <div class="netdraw-player p1-slot ${p1Class} ${p1Tbd}" data-player-name="${p1Name}">
-                <span class="netdraw-pname">${p1Name || 'TBD'}</span>
+                <span class="netdraw-pname">${p1Name || escapeHtml(__('tbd', 'TBD'))}</span>
             </div>
         `;
 
         // Player 2 DOM
         const p2Html = `
             <div class="netdraw-player p2-slot ${p2Class} ${p2Tbd}" data-player-name="${p2Name}">
-                <span class="netdraw-pname">${p2Name || 'TBD'}</span>
+                <span class="netdraw-pname">${p2Name || escapeHtml(__('tbd', 'TBD'))}</span>
             </div>
         `;
 
         // Match Score DOM
         const scoreHtml = match.score 
-            ? `<div class="netdraw-score-row" title="Match Score">${escapeHtml(match.score)}</div>` 
+            ? `<div class="netdraw-score-row" title="${escapeHtml(__('match_score', 'Match Score'))}">${escapeHtml(match.score)}</div>` 
             : '';
 
         // Match Datetime DOM
         const datetimeHtml = match.datetime 
-            ? `<div class="netdraw-datetime-row" title="Match Date & Time">${escapeHtml(match.datetime)}</div>` 
+            ? `<div class="netdraw-datetime-row" title="${escapeHtml(__('match_datetime', 'Match Date & Time'))}">${escapeHtml(match.datetime)}</div>` 
             : '';
 
         matchCard.innerHTML = `
@@ -178,7 +186,7 @@
                     window.netdrawRenderInstance(container, bracketData);
                 } catch (e) {
                     console.error("NetDraw parsing error:", e);
-                    container.innerHTML = '<div class="netdraw-error">Error parsing bracket data.</div>';
+                    container.innerHTML = '<div class="netdraw-error">' + escapeHtml(__('error_parsing', 'Error parsing bracket data.')) + '</div>';
                 }
             }
         });

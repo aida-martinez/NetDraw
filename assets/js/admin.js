@@ -7,6 +7,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // Helper function for translations
+    function __(key, defaultVal) {
+        if (typeof netdrawAdminData !== 'undefined' && netdrawAdminData.strings && netdrawAdminData.strings[key]) {
+            return netdrawAdminData.strings[key];
+        }
+        return defaultVal;
+    }
+
     // Load initial data
     let bracketData = { size: 8, matches: {} };
     if (typeof netdrawAdminData !== 'undefined' && netdrawAdminData.bracketData) {
@@ -98,13 +106,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get round display name
     function getRoundName(r, totalRounds) {
         if (r === totalRounds) {
-            return 'Finals';
+            return __('finals', 'Finals');
         } else if (r === totalRounds - 1) {
-            return 'Semifinals';
+            return __('semifinals', 'Semifinals');
         } else if (r === totalRounds - 2) {
-            return 'Quarterfinals';
+            return __('quarterfinals', 'Quarterfinals');
         }
-        return `Round ${r}`;
+        return __('round_n', 'Round %d').replace('%d', r);
     }
 
     // Render the grid editor UI
@@ -118,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const roundHeader = document.createElement('div');
             roundHeader.className = 'netdraw-admin-round-header';
-            roundHeader.innerHTML = `<h3>${getRoundName(r, rounds)}</h3><span class="netdraw-round-info">Round ${r}</span>`;
+            roundHeader.innerHTML = `<h3>${getRoundName(r, rounds)}</h3><span class="netdraw-round-info">${__('round_n', 'Round %d').replace('%d', r)}</span>`;
             roundCol.appendChild(roundHeader);
 
             const matchesList = document.createElement('div');
@@ -135,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const matchTitle = document.createElement('div');
                 matchTitle.className = 'netdraw-admin-match-title';
-                matchTitle.innerText = `Match ${m}`;
+                matchTitle.innerText = __('match_n', 'Match %d').replace('%d', m);
                 matchBox.appendChild(matchTitle);
 
                 // Player 1 Row
@@ -145,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const p1Input = document.createElement('input');
                 p1Input.type = 'text';
                 p1Input.value = match.p1 || '';
-                p1Input.placeholder = r === 1 ? 'Player 1' : 'TBD';
+                p1Input.placeholder = r === 1 ? __('player_n', 'Player %d').replace('%d', 1) : __('tbd', 'TBD');
                 if (r > 1) {
                     p1Input.readOnly = true;
                     p1Input.className = 'netdraw-readonly-input';
@@ -163,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 p1WinBtn.type = 'button';
                 p1WinBtn.className = `netdraw-win-btn ${match.winner === 'p1' ? 'active' : ''}`;
                 p1WinBtn.innerHTML = '&#10004;'; // Checkmark
-                p1WinBtn.title = 'Mark Player 1 as Winner';
+                p1WinBtn.title = __('mark_winner_n', 'Mark Player %d as Winner').replace('%d', 1);
                 p1WinBtn.addEventListener('click', function() {
                     toggleWinner(matchId, 'p1');
                 });
@@ -177,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const p2Input = document.createElement('input');
                 p2Input.type = 'text';
                 p2Input.value = match.p2 || '';
-                p2Input.placeholder = r === 1 ? 'Player 2' : 'TBD';
+                p2Input.placeholder = r === 1 ? __('player_n', 'Player %d').replace('%d', 2) : __('tbd', 'TBD');
                 if (r > 1) {
                     p2Input.readOnly = true;
                     p2Input.className = 'netdraw-readonly-input';
@@ -194,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 p2WinBtn.type = 'button';
                 p2WinBtn.className = `netdraw-win-btn ${match.winner === 'p2' ? 'active' : ''}`;
                 p2WinBtn.innerHTML = '&#10004;';
-                p2WinBtn.title = 'Mark Player 2 as Winner';
+                p2WinBtn.title = __('mark_winner_n', 'Mark Player %d as Winner').replace('%d', 2);
                 p2WinBtn.addEventListener('click', function() {
                     toggleWinner(matchId, 'p2');
                 });
@@ -208,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const scoreInput = document.createElement('input');
                 scoreInput.type = 'text';
                 scoreInput.value = match.score || '';
-                scoreInput.placeholder = 'Score (e.g. 6-4 6-2)';
+                scoreInput.placeholder = __('score_placeholder', 'Score (e.g. 6-4 6-2)');
                 scoreInput.className = 'netdraw-score-input';
                 scoreInput.addEventListener('input', function(e) {
                     bracketData.matches[matchId].score = e.target.value;
@@ -225,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dtInput = document.createElement('input');
                 dtInput.type = 'text';
                 dtInput.value = match.datetime || '';
-                dtInput.placeholder = 'Date & Time (e.g. Sat 10:00 AM)';
+                dtInput.placeholder = __('datetime_placeholder', 'Date & Time (e.g. Sat 10:00 AM)');
                 dtInput.className = 'netdraw-datetime-input';
                 dtInput.addEventListener('input', function(e) {
                     bracketData.matches[matchId].datetime = e.target.value;
@@ -249,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check if player slot has a name populated
         const playerName = playerSlot === 'p1' ? match.p1 : match.p2;
         if (!playerName) {
-            alert('Cannot set winner for an empty player slot.');
+            alert(__('cannot_set_winner', 'Cannot set winner for an empty player slot.'));
             return;
         }
 
@@ -284,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle size change
     sizeSelect.addEventListener('change', function(e) {
-        if (confirm('Changing the tournament size will reset progression matches that fall out of the new boundaries. Do you want to proceed?')) {
+        if (confirm(__('confirm_size_change', 'Changing the tournament size will reset progression matches that fall out of the new boundaries. Do you want to proceed?'))) {
             syncBracketData(e.target.value);
             renderEditor();
         } else {
@@ -298,11 +306,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (printBtn) {
         printBtn.addEventListener('click', function() {
             const titleInput = document.getElementById('title');
-            const title = titleInput && titleInput.value ? titleInput.value : 'Tournament Bracket';
+            const title = titleInput && titleInput.value ? titleInput.value : __('tournament_bracket', 'Tournament Bracket');
             
             const printWindow = window.open('', '_blank', 'width=1200,height=800');
             if (!printWindow) {
-                alert('Please allow popups to print the bracket.');
+                alert(__('allow_popups', 'Please allow popups to print the bracket.'));
                 return;
             }
 
@@ -396,7 +404,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Header
                             const header = document.createElement('div');
                             header.className = 'netdraw-frontend-header';
-                            header.innerHTML = '<h2>' + ${JSON.stringify(title)} + '</h2><span class="netdraw-badge">' + data.size + ' Player Knockout Draw</span>';
+                            header.innerHTML = '<h2>' + ${JSON.stringify(title)} + '</h2><span class="netdraw-badge">' + ${JSON.stringify(__('knockout_draw', '%d Player Knockout Draw'))}.replace('%d', data.size) + '</span>';
                             container.appendChild(header);
 
                             const scrollWrapper = document.createElement('div');
@@ -425,8 +433,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const p1Tbd = !p1Name ? 'is-tbd' : '';
                                 const p2Tbd = !p2Name ? 'is-tbd' : '';
 
-                                const p1Html = '<div class="netdraw-player p1-slot ' + p1Class + ' ' + p1Tbd + '"><span class="netdraw-pname">' + (p1Name || 'TBD') + '</span></div>';
-                                const p2Html = '<div class="netdraw-player p2-slot ' + p2Class + ' ' + p2Tbd + '"><span class="netdraw-pname">' + (p2Name || 'TBD') + '</span></div>';
+                                const p1Html = '<div class="netdraw-player p1-slot ' + p1Class + ' ' + p1Tbd + '"><span class="netdraw-pname">' + (p1Name || ${JSON.stringify(__('tbd', 'TBD'))}) + '</span></div>';
+                                const p2Html = '<div class="netdraw-player p2-slot ' + p2Class + ' ' + p2Tbd + '"><span class="netdraw-pname">' + (p2Name || ${JSON.stringify(__('tbd', 'TBD'))}) + '</span></div>';
                                 const scoreHtml = match.score ? '<div class="netdraw-score-row">' + match.score + '</div>' : '';
                                 const datetimeHtml = match.datetime ? '<div class="netdraw-datetime-row">' + match.datetime + '</div>' : '';
 

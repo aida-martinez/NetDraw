@@ -2,7 +2,7 @@
 /**
  * Plugin Name: NetDraw
  * Description: A lightweight, spreadsheet-style WordPress plugin for managing and displaying knockout tennis tournaments with visual brackets.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Aida Martinez
  * Text Domain: netdraw
  * License: GPL-2.0-or-later
@@ -19,10 +19,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-define( 'NETDRAW_VERSION', '1.0.0' );
+define( 'NETDRAW_VERSION', '1.0.1' );
 define( 'NETDRAW_FILE', __FILE__ );
 define( 'NETDRAW_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NETDRAW_URL', plugin_dir_url( __FILE__ ) );
+
+// Load plugin text domain for translations.
+function netdraw_load_textdomain() {
+	load_plugin_textdomain( 'netdraw', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+}
+add_action( 'init', 'netdraw_load_textdomain' );
 
 // ---------------------------------------------------------------------------
 // Lifecycle hooks – must be registered at top-level, not inside other hooks.
@@ -120,6 +126,23 @@ function netdraw_enqueue_admin_assets( $hook ) {
 		array(
 			'bracketData'    => json_decode( $bracket_data ),
 			'frontendCssUrl' => NETDRAW_URL . 'assets/css/frontend.css',
+			'strings'        => array(
+				'finals'              => __( 'Finals', 'netdraw' ),
+				'semifinals'          => __( 'Semifinals', 'netdraw' ),
+				'quarterfinals'       => __( 'Quarterfinals', 'netdraw' ),
+				'round_n'             => __( 'Round %d', 'netdraw' ),
+				'match_n'             => __( 'Match %d', 'netdraw' ),
+				'player_n'            => __( 'Player %d', 'netdraw' ),
+				'tbd'                 => __( 'TBD', 'netdraw' ),
+				'cannot_set_winner'   => __( 'Cannot set winner for an empty player slot.', 'netdraw' ),
+				'confirm_size_change' => __( 'Changing the tournament size will reset progression matches that fall out of the new boundaries. Do you want to proceed?', 'netdraw' ),
+				'tournament_bracket'  => __( 'Tournament Bracket', 'netdraw' ),
+				'allow_popups'        => __( 'Please allow popups to print the bracket.', 'netdraw' ),
+				'knockout_draw'       => __( '%d Player Knockout Draw', 'netdraw' ),
+				'mark_winner_n'       => __( 'Mark Player %d as Winner', 'netdraw' ),
+				'score_placeholder'   => __( 'Score (e.g. 6-4 6-2)', 'netdraw' ),
+				'datetime_placeholder'=> __( 'Date & Time (e.g. Sat 10:00 AM)', 'netdraw' ),
+			),
 		)
 	);
 }
@@ -165,10 +188,10 @@ function netdraw_editor_meta_box_callback( $post ) {
 			<div class="netdraw-size-selector-wrap" style="display: flex; align-items: center; gap: 10px;">
 				<label for="netdraw_bracket_size"><strong><?php esc_html_e( 'Tournament Size:', 'netdraw' ); ?></strong></label>
 				<select id="netdraw_bracket_size" name="netdraw_bracket_size" class="postbox" style="margin: 0;">
-					<option value="8" <?php selected( $size, 8 ); ?>>8 Players</option>
-					<option value="16" <?php selected( $size, 16 ); ?>>16 Players</option>
-					<option value="32" <?php selected( $size, 32 ); ?>>32 Players</option>
-					<option value="64" <?php selected( $size, 64 ); ?>>64 Players</option>
+					<option value="8" <?php selected( $size, 8 ); ?>><?php esc_html_e( '8 Players', 'netdraw' ); ?></option>
+					<option value="16" <?php selected( $size, 16 ); ?>><?php esc_html_e( '16 Players', 'netdraw' ); ?></option>
+					<option value="32" <?php selected( $size, 32 ); ?>><?php esc_html_e( '32 Players', 'netdraw' ); ?></option>
+					<option value="64" <?php selected( $size, 64 ); ?>><?php esc_html_e( '64 Players', 'netdraw' ); ?></option>
 				</select>
 				<p class="description" style="margin: 0;"><?php esc_html_e( 'Changing the size will reset matches if they exceed the new size bounds.', 'netdraw' ); ?></p>
 			</div>
@@ -176,7 +199,7 @@ function netdraw_editor_meta_box_callback( $post ) {
 			<div class="netdraw-shortcode-display" style="display: flex; align-items: center; gap: 8px;">
 				<label><strong><?php esc_html_e( 'Shortcode:', 'netdraw' ); ?></strong></label>
 				<input type="text" readonly value="<?php echo esc_attr( '[netdraw id="' . $post->ID . '"]' ); ?>" style="width: 150px; font-family: monospace; text-align: center; background: #f0f0f1; border: 1px solid #8c8f94; border-radius: 4px; padding: 4px;" onclick="this.select();">
-				<button type="button" class="button button-secondary" onclick="navigator.clipboard.writeText('[netdraw id=\'<?php echo absint( $post->ID ); ?>\']'); alert('Shortcode copied to clipboard!');"><?php esc_html_e( 'Copy', 'netdraw' ); ?></button>
+				<button type="button" class="button button-secondary" onclick="navigator.clipboard.writeText('[netdraw id=\'<?php echo absint( $post->ID ); ?>\']'); alert('<?php echo esc_js( __( 'Shortcode copied to clipboard!', 'netdraw' ) ); ?>');"><?php esc_html_e( 'Copy', 'netdraw' ); ?></button>
 				<button type="button" class="button button-primary" id="netdraw_print_pdf" style="margin-left: 5px;"><?php esc_html_e( 'Print / PDF', 'netdraw' ); ?></button>
 			</div>
 		</div>
@@ -278,6 +301,21 @@ function netdraw_shortcode_renderer( $atts ) {
 	// Enqueue registered frontend assets
 	wp_enqueue_style( 'netdraw-frontend-style' );
 	wp_enqueue_script( 'netdraw-frontend-script' );
+
+	wp_localize_script(
+		'netdraw-frontend-script',
+		'netdrawFrontData',
+		array(
+			'strings' => array(
+				'tbd'            => __( 'TBD', 'netdraw' ),
+				'knockout_draw'  => __( '%d Player Knockout Draw', 'netdraw' ),
+				'no_data'        => __( 'No bracket data available.', 'netdraw' ),
+				'match_score'    => __( 'Match Score', 'netdraw' ),
+				'match_datetime' => __( 'Match Date & Time', 'netdraw' ),
+				'error_parsing'  => __( 'Error parsing bracket data.', 'netdraw' ),
+			),
+		)
+	);
 
 	// Output HTML container with the JSON data directly in data attribute (no inline scripts)
 	ob_start();
