@@ -116,7 +116,8 @@ function netdraw_enqueue_admin_assets( $hook ) {
 			array(
 				'size'    => 8,
 				'matches' => new stdClass(),
-			)
+			),
+			JSON_UNESCAPED_UNICODE | JSON_HEX_TAG
 		);
 	}
 
@@ -244,12 +245,20 @@ function netdraw_save_post_handler( $post_id ) {
 	}
 
 	// Sanitize input: decode JSON first, then sanitize individual fields.
-	// Do NOT run sanitize_textarea_field on raw JSON – it strips backslashes
-	// that are required for valid JSON encoding.
+	// Do NOT run wp_unslash() on raw JSON – stripslashes() removes the \
+	// from JSON Unicode escapes (\u00eda), corrupting accented characters.
+	// WordPress 6.0+ no longer calls wp_magic_quotes(), so $_POST is raw.
 	if ( isset( $_POST['netdraw_bracket_data'] ) ) {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized field-by-field after decoding below.
-		$raw_json     = wp_unslash( $_POST['netdraw_bracket_data'] );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Decoded via json_decode(); individual fields sanitized below.
+		$raw_json     = $_POST['netdraw_bracket_data'];
 		$data_decoded = json_decode( $raw_json, true );
+
+		// If decode failed, WordPress may have added slashes (wp_magic_quotes).
+		// Try again after removing them.
+		if ( ! is_array( $data_decoded ) ) {
+			$raw_json     = wp_unslash( $raw_json );
+			$data_decoded = json_decode( $raw_json, true );
+		}
 
 		if ( is_array( $data_decoded ) ) {
 			$sanitized_matches = array();
@@ -274,7 +283,7 @@ function netdraw_save_post_handler( $post_id ) {
 			);
 
 			// update_post_meta handles slashing internally; do not wrap with wp_slash().
-			update_post_meta( $post_id, '_netdraw_bracket_data', wp_json_encode( $sanitized_payload ) );
+			update_post_meta( $post_id, '_netdraw_bracket_data', wp_json_encode( $sanitized_payload, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG ) );
 		}
 	}
 }
@@ -306,7 +315,8 @@ function netdraw_shortcode_renderer( $atts ) {
 		'netdraw-frontend-script',
 		'netdrawFrontData',
 		array(
-			'strings' => array(
+			'bracketData' => json_decode( $bracket_data_json, true ),
+			'strings'     => array(
 				'tbd'            => __( 'TBD', 'netdraw' ),
 				'knockout_draw'  => __( '%d Player Knockout Draw', 'netdraw' ),
 				'no_data'        => __( 'No bracket data available.', 'netdraw' ),
@@ -317,10 +327,10 @@ function netdraw_shortcode_renderer( $atts ) {
 		)
 	);
 
-	// Output HTML container with the JSON data directly in data attribute (no inline scripts)
+	// Output HTML container (data is passed via wp_localize_script, not HTML attributes)
 	ob_start();
 	?>
-	<div class="netdraw-bracket-container" data-bracket="<?php echo esc_attr( $bracket_data_json ); ?>">
+	<div class="netdraw-bracket-container">
 		<!-- Loader / Placeholder -->
 		<div class="netdraw-loader"><?php esc_html_e( 'Loading Tournament Draw...', 'netdraw' ); ?></div>
 	</div>

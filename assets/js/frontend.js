@@ -179,11 +179,10 @@
     function bootstrap() {
         const containers = document.querySelectorAll('.netdraw-bracket-container');
         containers.forEach(container => {
-            const rawData = container.getAttribute('data-bracket');
-            if (rawData) {
+            // Read bracket data from wp_localize_script (netdrawFrontData)
+            if (window.netdrawFrontData && window.netdrawFrontData.bracketData) {
                 try {
-                    const bracketData = JSON.parse(rawData);
-                    window.netdrawRenderInstance(container, bracketData);
+                    window.netdrawRenderInstance(container, window.netdrawFrontData.bracketData);
                 } catch (e) {
                     console.error("NetDraw parsing error:", e);
                     container.innerHTML = '<div class="netdraw-error">' + escapeHtml(__('error_parsing', 'Error parsing bracket data.')) + '</div>';
