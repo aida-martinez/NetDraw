@@ -27,12 +27,14 @@ It eliminates the need for clunky third-party bracket websites or messy image up
 
 - **Simple Setup** — Create a new tournament draw just like writing a standard post or page in WordPress.
 - **Flexible Sizing** — Choose your tournament size (8, 16, 32, or 64 players) via a simple dropdown selection.
+- **Draw Types** — Choose between a **Standard** single-elimination draw and a **Qualifying** draw that stops as soon as the configured number of players secure advancement spots.
 - **Easy Data Entry** — Dynamically generates a clean grid of input fields where you can type in player names for the first round and log scores as matches finish.
 - **Automatic Progression** — Mark a player as the winner of a match and the plugin automatically pushes their name forward into the next round's slot — saving you from manual re-typing.
 
 ### For Website Visitors (Frontend)
 
 - **Visual Brackets** — Generates a clean, classic, tree-style tournament bracket on any page or post using a simple shortcode (e.g., `[netdraw id="123"]`).
+- **Qualified (Q) Badges** — In qualifying draws, players who win their final qualifying match get a clear **Q** badge indicating they have advanced to the main draw.
 - **Path Highlighting** — Hovering over any player highlights their entire journey (matches won, played, and progressed) across all rounds in real-time.
 - **Responsive Design** — Uses a custom CSS tree-structure layout that enables smooth horizontal scrolling on mobile, tablet, and desktop screens without breaking the visual integrity.
 - **No Bloat** — Built purely with Vanilla JS and native CSS — no jQuery or external visual dependencies.
@@ -67,9 +69,12 @@ It eliminates the need for clunky third-party bracket websites or messy image up
 2. Click **Add New Tournament**.
 3. Enter a title for your tournament (e.g., *Summer Club Open 2026*).
 4. Under the **Tournament Bracket Editor** meta box, choose the tournament size (8, 16, 32, or 64 players).
-5. Fill in the player names for **Round 1**.
-6. As matches finish, fill in the score (e.g., `6-4 6-2`) and click the checkmark next to the winning player's name to automatically progress them to the next round.
-7. Click **Publish** or **Update** to save.
+5. Choose the **Draw Type**:
+   - **Standard** — the bracket plays out to a single champion and finalist.
+   - **Qualifying** — set the **Main Draw Qualifying Spots** (2, 4, 8, ...). The bracket stops at the round where the remaining winners equal that number; those players advance to the main draw.
+6. Fill in the player names for **Round 1**.
+7. As matches finish, fill in the score (e.g., `6-4 6-2`) and click the checkmark next to the winning player's name to automatically progress them to the next round.
+8. Click **Publish** or **Update** to save.
 
 ### 2. Displaying the Bracket
 
@@ -86,7 +91,7 @@ Paste it into any WordPress Post, Page, or Widget area to display the visual bra
 ## Frequently Asked Questions
 
 **What tournament formats are supported?**
-NetDraw currently supports single-elimination (knockout) brackets with 8, 16, 32, or 64 players.
+NetDraw currently supports single-elimination (knockout) brackets with 8, 16, 32, or 64 players. Draws can be **Standard** (crowned through to a champion) or **Qualifying** (stopped once the configured number of players have secured their advancement spots).
 
 **Can I use this for sports other than tennis?**
 Yes! While designed with tennis in mind, NetDraw works for any knockout-style tournament.
@@ -136,13 +141,20 @@ The plugin stores tournament configuration and match data in a flat, index-based
 ```json
 {
   "size": 8,
+  "drawType": "qualifying",
+  "qualifyingSpots": 4,
   "matches": {
     "r1_m1": { "p1": "Federer", "p2": "Nadal",    "score": "6-4 6-2", "winner": "p1" },
     "r1_m2": { "p1": "Djokovic", "p2": "Murray",  "score": "7-5 6-3", "winner": "p1" },
-    "r2_m1": { "p1": "Federer", "p2": "Djokovic", "score": "",        "winner": ""   }
+    "r1_m3": { "p1": "Sinner", "p2": "Zverev",    "score": "",        "winner": ""   },
+    "r1_m4": { "p1": "Alcaraz", "p2": "Rublev",   "score": "",        "winner": ""   }
   }
 }
 ```
+
+- `drawType` is `"standard"` or `"qualifying"`.
+- `qualifyingSpots` is only meaningful for qualifying draws — it is always a power of two and smaller than the bracket size.
+- For qualifying draws, the bracket renders only up to `effectiveRounds = log2(size / qualifyingSpots)` rounds. Match data beyond that (if any) is preserved but hidden, so switching back to Standard is non-destructive.
 
 ### Dynamic Progression Logic
 
@@ -153,9 +165,18 @@ To map match results forward, NetDraw uses simple binary propagation:
 - If `m` is **even**, the winner becomes `p2` (Player 2) of the next match.
 - Subsequent rounds are set to **read-only** in the admin panel to prevent data out-of-sync issues, ensuring the visual progression matches actual results.
 
+In a **qualifying** draw, propagation stops at the qualifying round: winners there receive a **Qualified (Q)** badge instead of being pushed into another round.
+
 ---
 
 ## Changelog
+
+### 1.1.0
+- Added **Qualifying Draw** support: choose Standard or Qualifying draws with configurable Main Draw Qualifying Spots (2, 4, 8, ...).
+- Qualifying brackets truncate automatically at the round where remaining winners equal the qualifying spots.
+- Added **Qualified (Q)** advancement badges and a dedicated Qualifying Round label in both the admin editor and the frontend bracket.
+- Preserves hidden bracket data so switching between draw types is non-destructive.
+- Fixed multiple shortcodes on the same page each rendering their own bracket instead of always showing the last one.
 
 ### 1.0.1
 - Added translation support for Spanish, French, Italian, and Galician.

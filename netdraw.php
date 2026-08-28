@@ -2,7 +2,7 @@
 /**
  * Plugin Name: NetDraw
  * Description: A lightweight, spreadsheet-style WordPress plugin for managing and displaying knockout tennis tournaments with visual brackets.
- * Version: 1.0.1
+ * Version: 1.1.0
  * Author: Aida Martinez
  * Text Domain: netdraw
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-define( 'NETDRAW_VERSION', '1.0.1' );
+define( 'NETDRAW_VERSION', '1.1.0' );
 define( 'NETDRAW_FILE', __FILE__ );
 define( 'NETDRAW_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NETDRAW_URL', plugin_dir_url( __FILE__ ) );
@@ -114,8 +114,10 @@ function netdraw_enqueue_admin_assets( $hook ) {
 	if ( empty( $bracket_data ) ) {
 		$bracket_data = wp_json_encode(
 			array(
-				'size'    => 8,
-				'matches' => new stdClass(),
+				'size'             => 8,
+				'drawType'         => 'standard',
+				'qualifyingSpots'  => 4,
+				'matches'          => new stdClass(),
 			),
 			JSON_UNESCAPED_UNICODE | JSON_HEX_TAG
 		);
@@ -128,12 +130,23 @@ function netdraw_enqueue_admin_assets( $hook ) {
 			'bracketData'    => json_decode( $bracket_data ),
 			'frontendCssUrl' => NETDRAW_URL . 'assets/css/frontend.css',
 			'strings'        => array(
+				'draw_type'           => __( 'Draw Type:', 'netdraw' ),
+				'standard'            => __( 'Standard', 'netdraw' ),
+				'qualifying'          => __( 'Qualifying', 'netdraw' ),
+				'qualifying_spots'    => __( 'Main Draw Qualifying Spots:', 'netdraw' ),
+				'qualifying_round'    => __( 'Qualifying Round', 'netdraw' ),
+				'qualified'           => __( 'Qualified', 'netdraw' ),
+				'qualified_q'         => __( 'Q', 'netdraw' ),
+				'qualifying_draw'     => __( '%d Player Qualifying Draw — %d Spots', 'netdraw' ),
+				'confirm_type_change' => __( 'Switching the draw type may hide or reveal progression matches depending on the qualifying spots. Do you want to proceed?', 'netdraw' ),
+				'confirm_spots_change'=> __( 'Changing the qualifying spots will adjust which rounds are shown. Do you want to proceed?', 'netdraw' ),
 				'finals'              => __( 'Finals', 'netdraw' ),
 				'semifinals'          => __( 'Semifinals', 'netdraw' ),
 				'quarterfinals'       => __( 'Quarterfinals', 'netdraw' ),
 				'round_n'             => __( 'Round %d', 'netdraw' ),
 				'match_n'             => __( 'Match %d', 'netdraw' ),
 				'player_n'            => __( 'Player %d', 'netdraw' ),
+				'players_n'           => __( '%d Players', 'netdraw' ),
 				'tbd'                 => __( 'TBD', 'netdraw' ),
 				'cannot_set_winner'   => __( 'Cannot set winner for an empty player slot.', 'netdraw' ),
 				'confirm_size_change' => __( 'Changing the tournament size will reset progression matches that fall out of the new boundaries. Do you want to proceed?', 'netdraw' ),
@@ -183,6 +196,11 @@ function netdraw_editor_meta_box_callback( $post ) {
 	$bracket_data_json = get_post_meta( $post->ID, '_netdraw_bracket_data', true );
 	$bracket_data = json_decode( $bracket_data_json, true );
 	$size = isset( $bracket_data['size'] ) ? intval( $bracket_data['size'] ) : 8;
+	$draw_type = isset( $bracket_data['drawType'] ) && 'qualifying' === $bracket_data['drawType'] ? 'qualifying' : 'standard';
+	$qualifying_spots = isset( $bracket_data['qualifyingSpots'] ) ? intval( $bracket_data['qualifyingSpots'] ) : 4;
+	if ( $qualifying_spots < 2 || ( $qualifying_spots & ( $qualifying_spots - 1 ) ) !== 0 || $qualifying_spots >= $size ) {
+		$qualifying_spots = 4;
+	}
 	?>
 	<div class="netdraw-admin-wrapper">
 		<div class="netdraw-admin-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
@@ -195,6 +213,24 @@ function netdraw_editor_meta_box_callback( $post ) {
 					<option value="64" <?php selected( $size, 64 ); ?>><?php esc_html_e( '64 Players', 'netdraw' ); ?></option>
 				</select>
 				<p class="description" style="margin: 0;"><?php esc_html_e( 'Changing the size will reset matches if they exceed the new size bounds.', 'netdraw' ); ?></p>
+			</div>
+
+			<div class="netdraw-draw-type-wrap">
+				<label for="netdraw_draw_type"><strong><?php esc_html_e( 'Draw Type:', 'netdraw' ); ?></strong></label>
+				<select id="netdraw_draw_type" name="netdraw_draw_type" class="postbox" style="margin: 0;">
+					<option value="standard" <?php selected( $draw_type, 'standard' ); ?>><?php esc_html_e( 'Standard', 'netdraw' ); ?></option>
+					<option value="qualifying" <?php selected( $draw_type, 'qualifying' ); ?>><?php esc_html_e( 'Qualifying', 'netdraw' ); ?></option>
+				</select>
+			</div>
+
+			<div class="netdraw-qualifying-spots-wrap<?php echo 'standard' === $draw_type ? ' netdraw-hidden' : ''; ?>">
+				<label for="netdraw_qualifying_spots"><strong><?php esc_html_e( 'Main Draw Qualifying Spots:', 'netdraw' ); ?></strong></label>
+				<select id="netdraw_qualifying_spots" name="netdraw_qualifying_spots" class="postbox" style="margin: 0;">
+					<?php for ( $spot = 2; $spot < $size; $spot *= 2 ) : ?>
+						<option value="<?php echo esc_attr( $spot ); ?>" <?php selected( $qualifying_spots, $spot ); ?>><?php echo esc_html( sprintf( _n( '%d Player', '%d Players', $spot, 'netdraw' ), $spot ) ); ?></option>
+					<?php endfor; ?>
+				</select>
+				<p class="description" style="margin: 0;"><?php esc_html_e( 'How many players advance to the main draw.', 'netdraw' ); ?></p>
 			</div>
 
 			<div class="netdraw-shortcode-display" style="display: flex; align-items: center; gap: 8px;">
@@ -263,6 +299,13 @@ function netdraw_save_post_handler( $post_id ) {
 		if ( is_array( $data_decoded ) ) {
 			$sanitized_matches = array();
 			$size              = isset( $data_decoded['size'] ) ? intval( $data_decoded['size'] ) : 8;
+			$draw_type         = isset( $data_decoded['drawType'] ) && 'qualifying' === $data_decoded['drawType'] ? 'qualifying' : 'standard';
+			$qualifying_spots  = isset( $data_decoded['qualifyingSpots'] ) ? intval( $data_decoded['qualifyingSpots'] ) : 4;
+
+			// Qualifying spots must be a power of two and smaller than the bracket size.
+			if ( $qualifying_spots < 2 || ( $qualifying_spots & ( $qualifying_spots - 1 ) ) !== 0 || $qualifying_spots >= $size ) {
+				$qualifying_spots = 4;
+			}
 
 			if ( isset( $data_decoded['matches'] ) && is_array( $data_decoded['matches'] ) ) {
 				foreach ( $data_decoded['matches'] as $match_id => $match ) {
@@ -278,8 +321,10 @@ function netdraw_save_post_handler( $post_id ) {
 			}
 
 			$sanitized_payload = array(
-				'size'    => $size,
-				'matches' => $sanitized_matches,
+				'size'            => $size,
+				'drawType'        => $draw_type,
+				'qualifyingSpots' => $qualifying_spots,
+				'matches'         => $sanitized_matches,
 			);
 
 			// update_post_meta handles slashing internally; do not wrap with wp_slash().
@@ -311,26 +356,36 @@ function netdraw_shortcode_renderer( $atts ) {
 	wp_enqueue_style( 'netdraw-frontend-style' );
 	wp_enqueue_script( 'netdraw-frontend-script' );
 
-	wp_localize_script(
-		'netdraw-frontend-script',
-		'netdrawFrontData',
-		array(
-			'bracketData' => json_decode( $bracket_data_json, true ),
-			'strings'     => array(
-				'tbd'            => __( 'TBD', 'netdraw' ),
-				'knockout_draw'  => __( '%d Player Knockout Draw', 'netdraw' ),
-				'no_data'        => __( 'No bracket data available.', 'netdraw' ),
-				'match_score'    => __( 'Match Score', 'netdraw' ),
-				'match_datetime' => __( 'Match Date & Time', 'netdraw' ),
-				'error_parsing'  => __( 'Error parsing bracket data.', 'netdraw' ),
-			),
-		)
-	);
+	// Localize the shared strings only once per page. Per-instance bracket
+	// data is passed inline below via the container's data-bracket attribute,
+	// so multiple shortcodes on the same page each render their own bracket.
+	static $strings_localized = false;
+	if ( ! $strings_localized ) {
+		$strings_localized = true;
+		wp_localize_script(
+			'netdraw-frontend-script',
+			'netdrawFrontData',
+			array(
+				'strings' => array(
+					'tbd'             => __( 'TBD', 'netdraw' ),
+					'knockout_draw'   => __( '%d Player Knockout Draw', 'netdraw' ),
+					'qualifying_draw' => __( '%d Player Qualifying Draw — %d Spots', 'netdraw' ),
+					'qualifying_round'=> __( 'Qualifying Round', 'netdraw' ),
+					'qualified'       => __( 'Qualified', 'netdraw' ),
+					'qualified_q'     => __( 'Q', 'netdraw' ),
+					'no_data'         => __( 'No bracket data available.', 'netdraw' ),
+					'match_score'     => __( 'Match Score', 'netdraw' ),
+					'match_datetime'  => __( 'Match Date & Time', 'netdraw' ),
+					'error_parsing'   => __( 'Error parsing bracket data.', 'netdraw' ),
+				),
+			)
+		);
+	}
 
-	// Output HTML container (data is passed via wp_localize_script, not HTML attributes)
+	// Output HTML container (data is passed inline, not via wp_localize_script)
 	ob_start();
 	?>
-	<div class="netdraw-bracket-container">
+	<div class="netdraw-bracket-container" data-bracket="<?php echo esc_attr( $bracket_data_json ); ?>">
 		<!-- Loader / Placeholder -->
 		<div class="netdraw-loader"><?php esc_html_e( 'Loading Tournament Draw...', 'netdraw' ); ?></div>
 	</div>

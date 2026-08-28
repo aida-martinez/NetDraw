@@ -35,6 +35,12 @@
     font-weight: 600;
 }
 
+.netdraw-badge.qualifying {
+    background: #e7eefb;
+    color: #1d4e89;
+    border-color: #9ec2e6;
+}
+
 /* Scroll Wrapper to support wide screen layouts and mobile swiping */
 .netdraw-scroll-wrapper {
     overflow-x: auto;
@@ -80,6 +86,13 @@
     justify-content: center;
     position: relative;
     padding-right: 40px; /* Gap between rounds */
+}
+
+/* Top level holds one card per top-round match (1 for Standard, N for Qualifying) */
+.netdraw-top-level {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 /* Flat Card Styling */
@@ -135,6 +148,38 @@
 
 .netdraw-player.is-loser {
     color: #94a3b8;
+}
+
+/* Qualified player badge in the qualifying round */
+.netdraw-qualified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    color: #ffffff;
+    background: #2271b1;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+/* Qualifying round cards get a subtle blue tint so the draw truncation is obvious */
+.netdraw-card.is-qualifying-round {
+    border-color: #9ec2e6;
+}
+
+.netdraw-card.is-qualifying-round:hover {
+    border-color: #2271b1;
+}
+
+.netdraw-card.is-qualifying-round.has-winner {
+    border-color: #15803d;
+    box-shadow: 0 0 0 1px #15803d;
 }
 
 .netdraw-player.p1-slot {

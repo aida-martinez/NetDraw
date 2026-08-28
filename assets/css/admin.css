@@ -42,6 +42,62 @@
     color: #646970;
 }
 
+.netdraw-draw-type-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.netdraw-qualifying-spots-wrap {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.netdraw-qualifying-spots-wrap .description {
+    flex-basis: 100%;
+}
+
+.netdraw-hidden {
+    display: none !important;
+}
+
+/* Qualifying Round column emphasis */
+.netdraw-admin-round-header.is-qualifying-round {
+    background: #e7eefb;
+    border-bottom-color: #2271b1;
+}
+
+.netdraw-admin-round-header.is-qualifying-round h3 {
+    color: #1d4e89;
+}
+
+.netdraw-admin-match-box.is-qualifying-round {
+    border-color: #9ec2e6;
+    background: #ffffff;
+}
+
+.netdraw-admin-match-box.is-qualifying-round:hover {
+    border-color: #2271b1;
+}
+
+/* Qualifier badge in the admin editor */
+.netdraw-admin-qualifier-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    background: #2271b1;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
 /* Horizontal Column Layout */
 .netdraw-admin-grid-container {
     display: flex;

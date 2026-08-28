@@ -23,13 +23,22 @@
 
         const size = parseInt(bracketData.size, 10);
         const totalRounds = Math.log2(size);
+        const isQualifying = bracketData.drawType === 'qualifying' && bracketData.qualifyingSpots >= 2;
+        // Qualifying draws stop at the round where remaining winners equal the qualifying spots.
+        const effectiveRounds = isQualifying ? Math.log2(size / bracketData.qualifyingSpots) : totalRounds;
 
         // Header for Tournament Info
         const header = document.createElement('div');
         header.className = 'netdraw-frontend-header';
+        let badgeText = __('knockout_draw', '%d Player Knockout Draw').replace('%d', size);
+        if (isQualifying) {
+            badgeText = __('qualifying_draw', '%d Player Qualifying Draw — %d Spots')
+                .replace('%d', size)
+                .replace('%d', bracketData.qualifyingSpots);
+        }
         header.innerHTML = `
             <div class="netdraw-bracket-meta">
-                <span class="netdraw-badge">${escapeHtml(__('knockout_draw', '%d Player Knockout Draw').replace('%d', size))}</span>
+                <span class="netdraw-badge${isQualifying ? ' qualifying' : ''}">${escapeHtml(badgeText)}</span>
             </div>
         `;
         container.appendChild(header);
@@ -41,10 +50,16 @@
         const bracketTree = document.createElement('div');
         bracketTree.className = 'netdraw-bracket-tree';
 
-        // Start recursive tree rendering from the Finals (root node)
-        // Finals is round = totalRounds, matchNum = 1
-        const rootNode = buildTreeNode(totalRounds, 1, totalRounds, bracketData.matches);
-        bracketTree.appendChild(rootNode);
+        // The top level holds every match card of the effective top round.
+        // Standard draws have a single Finals card; qualifying draws have one
+        // card per qualifying spot, each with its own feeder subtree below.
+        const topMatchCount = Math.pow(2, totalRounds - effectiveRounds);
+        const topLevel = document.createElement('div');
+        topLevel.className = 'netdraw-top-level';
+        for (let m = 1; m <= topMatchCount; m++) {
+            topLevel.appendChild(buildTreeNode(effectiveRounds, m, effectiveRounds, isQualifying, bracketData.matches));
+        }
+        bracketTree.appendChild(topLevel);
         
         scrollWrapper.appendChild(bracketTree);
         container.appendChild(scrollWrapper);
@@ -54,17 +69,19 @@
     };
 
     /**
-     * Recursively builds tree nodes (Finals down to Round 1)
+     * Recursively builds tree nodes (top round down to Round 1).
+     * For qualifying draws, top round is the qualifying round.
      */
-    function buildTreeNode(round, matchNum, totalRounds, matches) {
+    function buildTreeNode(round, matchNum, effectiveRounds, isQualifying, matches) {
         const matchId = `r${round}_m${matchNum}`;
         const match = matches[matchId] || { p1: '', p2: '', score: '', winner: '' };
+        const isQualifyingRound = isQualifying && round === effectiveRounds;
 
         const node = document.createElement('div');
         node.className = 'netdraw-node';
 
         const matchCard = document.createElement('div');
-        matchCard.className = `netdraw-card ${match.winner ? 'has-winner' : ''}`;
+        matchCard.className = `netdraw-card ${match.winner ? 'has-winner' : ''} ${isQualifyingRound ? 'is-qualifying-round' : ''}`;
         
         // Clean player names
         const p1Name = match.p1 ? escapeHtml(match.p1) : '';
@@ -76,10 +93,13 @@
         const p1Tbd = !p1Name ? 'is-tbd' : '';
         const p2Tbd = !p2Name ? 'is-tbd' : '';
 
+        const qualifiedBadge = `<span class="netdraw-qualified-badge" title="${escapeHtml(__('qualified', 'Qualified'))}">${escapeHtml(__('qualified_q', 'Q'))}</span>`;
+
         // Player 1 DOM
         const p1Html = `
             <div class="netdraw-player p1-slot ${p1Class} ${p1Tbd}" data-player-name="${p1Name}">
                 <span class="netdraw-pname">${p1Name || escapeHtml(__('tbd', 'TBD'))}</span>
+                ${isQualifyingRound && match.winner === 'p1' ? qualifiedBadge : ''}
             </div>
         `;
 
@@ -87,6 +107,7 @@
         const p2Html = `
             <div class="netdraw-player p2-slot ${p2Class} ${p2Tbd}" data-player-name="${p2Name}">
                 <span class="netdraw-pname">${p2Name || escapeHtml(__('tbd', 'TBD'))}</span>
+                ${isQualifyingRound && match.winner === 'p2' ? qualifiedBadge : ''}
             </div>
         `;
 
@@ -118,9 +139,9 @@
             childrenContainer.className = 'netdraw-children';
 
             // Top feeder: previous round, match odd (2 * m - 1)
-            const topChild = buildTreeNode(round - 1, 2 * matchNum - 1, totalRounds, matches);
+            const topChild = buildTreeNode(round - 1, 2 * matchNum - 1, effectiveRounds, isQualifying, matches);
             // Bottom feeder: previous round, match even (2 * m)
-            const bottomChild = buildTreeNode(round - 1, 2 * matchNum, totalRounds, matches);
+            const bottomChild = buildTreeNode(round - 1, 2 * matchNum, effectiveRounds, isQualifying, matches);
 
             childrenContainer.appendChild(topChild);
             childrenContainer.appendChild(bottomChild);
@@ -179,14 +200,24 @@
     function bootstrap() {
         const containers = document.querySelectorAll('.netdraw-bracket-container');
         containers.forEach(container => {
-            // Read bracket data from wp_localize_script (netdrawFrontData)
-            if (window.netdrawFrontData && window.netdrawFrontData.bracketData) {
-                try {
-                    window.netdrawRenderInstance(container, window.netdrawFrontData.bracketData);
-                } catch (e) {
-                    console.error("NetDraw parsing error:", e);
-                    container.innerHTML = '<div class="netdraw-error">' + escapeHtml(__('error_parsing', 'Error parsing bracket data.')) + '</div>';
-                }
+            // Each container carries its own bracket data in the data-bracket attribute.
+            const bracketJson = container.getAttribute('data-bracket');
+            if (!bracketJson) return;
+
+            let bracketData;
+            try {
+                bracketData = JSON.parse(bracketJson);
+            } catch (e) {
+                console.error("NetDraw parsing error:", e);
+                container.innerHTML = '<div class="netdraw-error">' + escapeHtml(__('error_parsing', 'Error parsing bracket data.')) + '</div>';
+                return;
+            }
+
+            try {
+                window.netdrawRenderInstance(container, bracketData);
+            } catch (e) {
+                console.error("NetDraw parsing error:", e);
+                container.innerHTML = '<div class="netdraw-error">' + escapeHtml(__('error_parsing', 'Error parsing bracket data.')) + '</div>';
             }
         });
     }

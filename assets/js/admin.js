@@ -1,9 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const sizeSelect = document.getElementById('netdraw_bracket_size');
+    const drawTypeSelect = document.getElementById('netdraw_draw_type');
+    const spotsSelect = document.getElementById('netdraw_qualifying_spots');
+    const spotsWrap = document.querySelector('.netdraw-qualifying-spots-wrap');
     const dataInput = document.getElementById('netdraw_bracket_data_input');
     const gridContainer = document.getElementById('netdraw_admin_grid_container');
 
-    if (!sizeSelect || !dataInput || !gridContainer) {
+    if (!sizeSelect || !drawTypeSelect || !spotsSelect || !dataInput || !gridContainer) {
         return;
     }
 
@@ -16,18 +19,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Load initial data
-    let bracketData = { size: 8, matches: {} };
+    let bracketData = { size: 8, drawType: 'standard', qualifyingSpots: 4, matches: {} };
     if (typeof netdrawAdminData !== 'undefined' && netdrawAdminData.bracketData) {
         bracketData = netdrawAdminData.bracketData;
         if (!bracketData.matches) {
             bracketData.matches = {};
         }
+        if (bracketData.drawType !== 'qualifying' && bracketData.drawType !== 'standard') {
+            bracketData.drawType = 'standard';
+        }
+        if (!bracketData.qualifyingSpots) {
+            bracketData.qualifyingSpots = 4;
+        }
+    }
+
+    function getTotalRounds() {
+        return Math.log2(bracketData.size);
+    }
+
+    // Number of rounds actually rendered / propagated.
+    // Qualifying draws stop at the round where remaining winners == qualifying spots.
+    function getEffectiveRounds() {
+        if (bracketData.drawType === 'qualifying' && bracketData.qualifyingSpots >= 2) {
+            return Math.log2(bracketData.size / bracketData.qualifyingSpots);
+        }
+        return getTotalRounds();
+    }
+
+    // Repopulate the qualifying spots dropdown for the current bracket size.
+    function updateQualifyingSpotsOptions() {
+        const current = parseInt(bracketData.qualifyingSpots, 10);
+        spotsSelect.innerHTML = '';
+        let matched = null;
+        for (let spot = 2; spot < bracketData.size; spot *= 2) {
+            const option = document.createElement('option');
+            option.value = spot;
+            option.textContent = __('players_n', '%d Players').replace('%d', spot);
+            spotsSelect.appendChild(option);
+            if (spot === current) {
+                matched = spot;
+            }
+        }
+        if (!matched) {
+            // Falls back to half the bracket so the round count stays integral.
+            bracketData.qualifyingSpots = bracketData.size / 2;
+            matched = bracketData.qualifyingSpots;
+        }
+        spotsSelect.value = matched.toString();
     }
 
     // Initialize/sync matches based on selected size
     function syncBracketData(size) {
         bracketData.size = parseInt(size, 10);
-        const rounds = Math.log2(bracketData.size);
+        updateQualifyingSpotsOptions();
+        const rounds = getTotalRounds();
         const newMatches = {};
 
         for (let r = 1; r <= rounds; r++) {
@@ -45,12 +90,12 @@ document.addEventListener('DOMContentLoaded', function() {
         propagateWinners();
     }
 
-    // Propagate winners from round to round
+    // Propagate winners from round to round (stopping at the qualifying round)
     function propagateWinners() {
-        const rounds = Math.log2(bracketData.size);
-        
-        // Clear all subsequent rounds' player names first, we will rebuild them
-        for (let r = 2; r <= rounds; r++) {
+        const effectiveRounds = getEffectiveRounds();
+
+        // Clear all displayed subsequent rounds' player names first, we will rebuild them
+        for (let r = 2; r <= effectiveRounds; r++) {
             const matchCount = bracketData.size / Math.pow(2, r);
             for (let m = 1; m <= matchCount; m++) {
                 const matchId = `r${r}_m${m}`;
@@ -59,13 +104,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Forward propagation loop
-        for (let r = 1; r < rounds; r++) {
+        // Forward propagation loop (winners never propagate out of the qualifying round)
+        for (let r = 1; r < effectiveRounds; r++) {
             const matchCount = bracketData.size / Math.pow(2, r);
             for (let m = 1; m <= matchCount; m++) {
                 const matchId = `r${r}_m${m}`;
                 const match = bracketData.matches[matchId];
-                
+
                 let winnerName = '';
                 if (match.winner === 'p1') {
                     winnerName = match.p1;
@@ -105,7 +150,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Get round display name
     function getRoundName(r, totalRounds) {
-        if (r === totalRounds) {
+        if (bracketData.drawType === 'qualifying' && r === getEffectiveRounds()) {
+            return __('qualifying_round', 'Qualifying Round');
+        } else if (r === totalRounds) {
             return __('finals', 'Finals');
         } else if (r === totalRounds - 1) {
             return __('semifinals', 'Semifinals');
@@ -118,15 +165,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Render the grid editor UI
     function renderEditor() {
         gridContainer.innerHTML = '';
-        const rounds = Math.log2(bracketData.size);
+        const rounds = getEffectiveRounds();
+        const totalRounds = getTotalRounds();
 
         for (let r = 1; r <= rounds; r++) {
+            const isQualifyingRound = (bracketData.drawType === 'qualifying' && r === rounds);
             const roundCol = document.createElement('div');
             roundCol.className = 'netdraw-admin-round-col';
             
             const roundHeader = document.createElement('div');
-            roundHeader.className = 'netdraw-admin-round-header';
-            roundHeader.innerHTML = `<h3>${getRoundName(r, rounds)}</h3><span class="netdraw-round-info">${__('round_n', 'Round %d').replace('%d', r)}</span>`;
+            roundHeader.className = 'netdraw-admin-round-header' + (isQualifyingRound ? ' is-qualifying-round' : '');
+            roundHeader.innerHTML = `<h3>${getRoundName(r, totalRounds)}</h3><span class="netdraw-round-info">${__('round_n', 'Round %d').replace('%d', r)}</span>`;
             roundCol.appendChild(roundHeader);
 
             const matchesList = document.createElement('div');
@@ -138,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const match = bracketData.matches[matchId];
 
                 const matchBox = document.createElement('div');
-                matchBox.className = `netdraw-admin-match-box ${match.winner ? 'has-winner' : ''}`;
+                matchBox.className = `netdraw-admin-match-box ${match.winner ? 'has-winner' : ''}` + (isQualifyingRound ? ' is-qualifying-round' : '');
                 matchBox.dataset.matchId = matchId;
 
                 const matchTitle = document.createElement('div');
@@ -166,6 +215,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
                 p1Row.appendChild(p1Input);
+
+                if (isQualifyingRound && match.winner === 'p1') {
+                    const qBadge = document.createElement('span');
+                    qBadge.className = 'netdraw-admin-qualifier-badge';
+                    qBadge.title = __('qualified', 'Qualified');
+                    qBadge.textContent = __('qualified_q', 'Q');
+                    p1Row.appendChild(qBadge);
+                }
 
                 const p1WinBtn = document.createElement('button');
                 p1WinBtn.type = 'button';
@@ -197,6 +254,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
                 p2Row.appendChild(p2Input);
+
+                if (isQualifyingRound && match.winner === 'p2') {
+                    const qBadge = document.createElement('span');
+                    qBadge.className = 'netdraw-admin-qualifier-badge';
+                    qBadge.title = __('qualified', 'Qualified');
+                    qBadge.textContent = __('qualified_q', 'Q');
+                    p2Row.appendChild(qBadge);
+                }
 
                 const p2WinBtn = document.createElement('button');
                 p2WinBtn.type = 'button';
@@ -301,6 +366,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Handle draw type change
+    if (drawTypeSelect) {
+        drawTypeSelect.addEventListener('change', function(e) {
+            const newType = e.target.value;
+            if (newType === bracketData.drawType) {
+                return;
+            }
+            if (confirm(__('confirm_type_change', 'Switching the draw type may hide or reveal progression matches depending on the qualifying spots. Do you want to proceed?'))) {
+                bracketData.drawType = newType;
+                if (spotsWrap) {
+                    spotsWrap.classList.toggle('netdraw-hidden', newType !== 'qualifying');
+                }
+                syncBracketData(bracketData.size);
+                renderEditor();
+            } else {
+                drawTypeSelect.value = bracketData.drawType;
+            }
+        });
+    }
+
+    // Handle qualifying spots change
+    if (spotsSelect) {
+        spotsSelect.addEventListener('change', function(e) {
+            const newSpots = parseInt(e.target.value, 10);
+            if (newSpots === bracketData.qualifyingSpots) {
+                return;
+            }
+            if (confirm(__('confirm_spots_change', 'Changing the qualifying spots will adjust which rounds are shown. Do you want to proceed?'))) {
+                bracketData.qualifyingSpots = newSpots;
+                syncBracketData(bracketData.size);
+                renderEditor();
+            } else {
+                spotsSelect.value = bracketData.qualifyingSpots.toString();
+            }
+        });
+    }
+
     // PDF/Print Download Action
     const printBtn = document.getElementById('netdraw_print_pdf');
     if (printBtn) {
@@ -401,10 +503,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             const data = ${JSON.stringify(bracketData)};
                             const container = document.getElementById('print-area');
                             
+                            const isQualifying = data.drawType === 'qualifying';
+                            const badgeText = isQualifying
+                                ? ${JSON.stringify(__('qualifying_draw', '%d Player Qualifying Draw — %d Spots'))}.replace('%d', data.size).replace('%d', data.qualifyingSpots)
+                                : ${JSON.stringify(__('knockout_draw', '%d Player Knockout Draw'))}.replace('%d', data.size);
+
                             // Header
                             const header = document.createElement('div');
                             header.className = 'netdraw-frontend-header';
-                            header.innerHTML = '<h2>' + ${JSON.stringify(title)} + '</h2><span class="netdraw-badge">' + ${JSON.stringify(__('knockout_draw', '%d Player Knockout Draw'))}.replace('%d', data.size) + '</span>';
+                            header.innerHTML = '<h2>' + ${JSON.stringify(title)} + '</h2><span class="netdraw-badge' + (isQualifying ? ' qualifying' : '') + '">' + badgeText + '</span>';
                             container.appendChild(header);
 
                             const scrollWrapper = document.createElement('div');
@@ -415,16 +522,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             const size = parseInt(data.size, 10);
                             const totalRounds = Math.log2(size);
+                            const effectiveRounds = isQualifying ? Math.log2(size / data.qualifyingSpots) : totalRounds;
 
-                            function buildTreeNode(round, matchNum, totalRounds, matches) {
+                            function buildTreeNode(round, matchNum, effectiveRounds, matches) {
                                 const matchId = 'r' + round + '_m' + matchNum;
                                 const match = matches[matchId] || { p1: '', p2: '', score: '', winner: '', datetime: '' };
+
+                                const isQualifyingRound = isQualifying && round === effectiveRounds;
 
                                 const node = document.createElement('div');
                                 node.className = 'netdraw-node';
 
                                 const matchCard = document.createElement('div');
-                                matchCard.className = 'netdraw-card' + (match.winner ? ' has-winner' : '');
+                                matchCard.className = 'netdraw-card' + (match.winner ? ' has-winner' : '') + (isQualifyingRound ? ' is-qualifying-round' : '');
 
                                 const p1Name = match.p1 || '';
                                 const p2Name = match.p2 || '';
@@ -432,9 +542,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const p2Class = match.winner === 'p2' ? 'is-winner' : (match.winner ? 'is-loser' : '');
                                 const p1Tbd = !p1Name ? 'is-tbd' : '';
                                 const p2Tbd = !p2Name ? 'is-tbd' : '';
+                                const qBadge = '<span class="netdraw-qualified-badge">' + ${JSON.stringify(__('qualified_q', 'Q'))} + '</span>';
+                                const p1Q = (isQualifyingRound && match.winner === 'p1') ? qBadge : '';
+                                const p2Q = (isQualifyingRound && match.winner === 'p2') ? qBadge : '';
 
-                                const p1Html = '<div class="netdraw-player p1-slot ' + p1Class + ' ' + p1Tbd + '"><span class="netdraw-pname">' + (p1Name || ${JSON.stringify(__('tbd', 'TBD'))}) + '</span></div>';
-                                const p2Html = '<div class="netdraw-player p2-slot ' + p2Class + ' ' + p2Tbd + '"><span class="netdraw-pname">' + (p2Name || ${JSON.stringify(__('tbd', 'TBD'))}) + '</span></div>';
+                                const p1Html = '<div class="netdraw-player p1-slot ' + p1Class + ' ' + p1Tbd + '"><span class="netdraw-pname">' + (p1Name || ${JSON.stringify(__('tbd', 'TBD'))}) + '</span>' + p1Q + '</div>';
+                                const p2Html = '<div class="netdraw-player p2-slot ' + p2Class + ' ' + p2Tbd + '"><span class="netdraw-pname">' + (p2Name || ${JSON.stringify(__('tbd', 'TBD'))}) + '</span>' + p2Q + '</div>';
                                 const scoreHtml = match.score ? '<div class="netdraw-score-row">' + match.score + '</div>' : '';
                                 const datetimeHtml = match.datetime ? '<div class="netdraw-datetime-row">' + match.datetime + '</div>' : '';
 
@@ -444,14 +557,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (round > 1) {
                                     const childrenContainer = document.createElement('div');
                                     childrenContainer.className = 'netdraw-children';
-                                    childrenContainer.appendChild(buildTreeNode(round - 1, 2 * matchNum - 1, totalRounds, matches));
-                                    childrenContainer.appendChild(buildTreeNode(round - 1, 2 * matchNum, totalRounds, matches));
+                                    childrenContainer.appendChild(buildTreeNode(round - 1, 2 * matchNum - 1, effectiveRounds, matches));
+                                    childrenContainer.appendChild(buildTreeNode(round - 1, 2 * matchNum, effectiveRounds, matches));
                                     node.appendChild(childrenContainer);
                                 }
                                 return node;
                             }
 
-                            bracketTree.appendChild(buildTreeNode(totalRounds, 1, totalRounds, data.matches));
+                            const topMatchCount = Math.pow(2, totalRounds - effectiveRounds);
+                            const topLevel = document.createElement('div');
+                            topLevel.className = 'netdraw-top-level';
+                            for (let m = 1; m <= topMatchCount; m++) {
+                                topLevel.appendChild(buildTreeNode(effectiveRounds, m, effectiveRounds, data.matches));
+                            }
+                            bracketTree.appendChild(topLevel);
                             
                             // Dynamic zoom based on size to fit 1 page without layout clipping
                             let zoomFactor = 1.0;

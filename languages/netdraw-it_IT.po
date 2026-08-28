@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: NetDraw 1.0.0\n"
+"Project-Id-Version: NetDraw 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-23 18:41+0200\n"
 "PO-Revision-Date: 2026-07-23 18:41+0200\n"
@@ -157,3 +157,44 @@ msgstr "Data e ora incontro"
 
 msgid "Error parsing bracket data."
 msgstr "Errore durante l'analisi dei dati del tabellone."
+
+msgid "Draw Type:"
+msgstr "Tipo di tabellone:"
+
+msgid "Standard"
+msgstr "Standard"
+
+msgid "Qualifying"
+msgstr "Qualificazioni"
+
+msgid "Main Draw Qualifying Spots:"
+msgstr "Posti di qualificazione per il tabellone principale:"
+
+msgid "Qualifying Round"
+msgstr "Turno di qualificazione"
+
+msgid "Qualified"
+msgstr "Qualificato"
+
+msgid "Q"
+msgstr "Q"
+
+msgid "%d Player Qualifying Draw — %d Spots"
+msgstr "Tabellone di qualificazione a %d giocatori — %d posti"
+
+msgid "Switching the draw type may hide or reveal progression matches depending on the qualifying spots. Do you want to proceed?"
+msgstr "Cambiare il tipo di tabellone può nascondere o mostrare le partite di progressione in base ai posti di qualificazione. Vuoi procedere?"
+
+msgid "Changing the qualifying spots will adjust which rounds are shown. Do you want to proceed?"
+msgstr "Modificare i posti di qualificazione regolerà i turni mostrati. Vuoi procedere?"
+
+msgid "%d Players"
+msgstr "%d Giocatori"
+
+msgid "How many players advance to the main draw."
+msgstr "Quanti giocatori avanzano al tabellone principale."
+
+msgid "%d Player"
+msgid_plural "%d Players"
+msgstr[0] "%d Giocatore"
+msgstr[1] "%d Giocatori"
